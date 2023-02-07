@@ -4,7 +4,9 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import CarModule from './car/car.module';
 import CarOptionsModule from './carOptions/carOptions.module';
+import CarOptionsExtraPaymentModule from './carOptionsExtraPayment/carOptionsExtraPayment.module';
 import CarServiceModule from './carService/carService.module';
+import CarTagsModule from './carTags/carTags.module';
 
 @Module({
     imports: [
@@ -15,7 +17,9 @@ import CarServiceModule from './carService/carService.module';
         MongooseModule.forRoot(process.env.MONGO_URL),
         CarModule,
         CarServiceModule,
-        CarOptionsModule
+        CarOptionsModule,
+        CarOptionsExtraPaymentModule,
+        CarTagsModule
     ],
     controllers: []
 })

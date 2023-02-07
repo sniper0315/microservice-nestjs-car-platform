@@ -5,6 +5,7 @@ import CarService from './car.service';
 import CreateCarDto from './dto/createCar.dto';
 import DeleteCarDto from './dto/deleteCar.dto';
 import UpdateCarDto from './dto/updateCar.dto';
+import { getComparator, stableSort } from 'src/helpers/utils';
 
 @Controller('car')
 @ApiTags('car')
@@ -20,7 +21,40 @@ export default class CarController {
     @Get('/all')
     @ApiOperation({ summary: 'get all cars from collection' })
     async getAllCars() {
-        return await this.carService.getAllCars();
+        const all = await this.carService.getAllCars();
+        const sortedAll = stableSort(all, getComparator('desc', 'createDateTime'));
+        const newAll = sortedAll.map((item, index) => {
+            const dateTime = {
+                cretedDateTimeFrom: item.createDateTime,
+                cretedDateTimeTo: item.createdAt,
+                lastUpdateDateTimeFrom: item.lastUpdateDateTime,
+                lastUpdateDateTimeTo: item.updatedAt
+            };
+            const metaInfo = {
+                sortBy: 'createDateTime',
+                sortDirection: 'desc',
+                offset: index,
+                limit: 10
+            };
+            const id = item._id.toString();
+            const produceCompany = item.produceCompany;
+            const carModel = item.carModel;
+            const produceYear = item.produceYear;
+            const seats = item.seats;
+            const color = item.color;
+            const doors = item.doors;
+            const fuelType = item.fuelType;
+            const luggage = item.luggage;
+            const carType = item.carType;
+            const transmission = item.transmission;
+            const carOwnerId = item.carOwnerId.toString();
+            const isDeleted = item.isDeleted;
+            const isActive = item.isActive;
+
+            return { id, produceCompany, carModel, produceYear, seats, color, doors, fuelType, luggage, carType, transmission, carOwnerId, isDeleted, isActive, dateTime, metaInfo };
+        });
+
+        return newAll;
     }
 
     @Get('/:carId')

@@ -2,14 +2,14 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as mSchema } from 'mongoose';
 
 import { Car } from 'src/car/schemas/car.schema';
+import CarOptionsDto from 'src/carOptions/types/dto/CarOptions.dto';
+import ICarOptions from 'src/carOptions/types/interfaces/ICarOptions.interface';
 import SchemaPlugin from 'src/helpers/schemaPlugin';
-import CarOptionsDto from '../types/dto/CarOptions.dto';
-import ICarOptions from '../types/interfaces/ICarOptions.interface';
 
-export type CarOptionDocument = CarOption & Document;
+export type CarOptionsExtraPaymentDocument = CarOptionsExtraPayment & Document;
 
 @Schema({ timestamps: true })
-export class CarOption {
+export class CarOptionsExtraPayment {
     @Prop({ required: true, ref: Car.name })
     carId: mSchema.Types.ObjectId;
 
@@ -18,6 +18,9 @@ export class CarOption {
 
     @Prop({ type: mSchema.Types.String })
     optionDescription: string;
+
+    @Prop({ type: mSchema.Types.Number })
+    price: number;
 
     @Prop({ default: new Date().toISOString() })
     createDateTime: string;
@@ -38,8 +41,8 @@ export class CarOption {
     updatedAt: string;
 }
 
-const CarOptionSchema = SchemaFactory.createForClass(CarOption);
+const CarOptionsExtraPaymentSchema = SchemaFactory.createForClass(CarOptionsExtraPayment);
 
-CarOptionSchema.plugin(SchemaPlugin);
+CarOptionsExtraPaymentSchema.plugin(SchemaPlugin);
 
-export { CarOptionSchema };
+export { CarOptionsExtraPaymentSchema };

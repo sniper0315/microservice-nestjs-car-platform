@@ -3,21 +3,18 @@ import { Document, Schema as mSchema } from 'mongoose';
 
 import { Car } from 'src/car/schemas/car.schema';
 import SchemaPlugin from 'src/helpers/schemaPlugin';
-import CarOptionsDto from '../types/dto/CarOptions.dto';
-import ICarOptions from '../types/interfaces/ICarOptions.interface';
+import CarTagDto from '../types/dto/CarTag.dto';
+import ICarTag from '../types/interfaces/ICarTag.interface';
 
-export type CarOptionDocument = CarOption & Document;
+export type CarTagDocument = CarTag & Document;
 
 @Schema({ timestamps: true })
-export class CarOption {
+export class CarTag {
     @Prop({ required: true, ref: Car.name })
     carId: mSchema.Types.ObjectId;
 
-    @Prop({ type: CarOptionsDto })
-    optionType: ICarOptions;
-
-    @Prop({ type: mSchema.Types.String })
-    optionDescription: string;
+    @Prop({ type: CarTagDto, default: { value: 'Electro', display: 'Electro' } })
+    tagName: ICarTag;
 
     @Prop({ default: new Date().toISOString() })
     createDateTime: string;
@@ -28,9 +25,6 @@ export class CarOption {
     @Prop({ default: false, type: mSchema.Types.Boolean })
     isDeleted: boolean;
 
-    @Prop({ default: true, type: mSchema.Types.Boolean })
-    isActive: boolean;
-
     @Prop()
     createdAt: string;
 
@@ -38,8 +32,8 @@ export class CarOption {
     updatedAt: string;
 }
 
-const CarOptionSchema = SchemaFactory.createForClass(CarOption);
+const CarTagSchema = SchemaFactory.createForClass(CarTag);
 
-CarOptionSchema.plugin(SchemaPlugin);
+CarTagSchema.plugin(SchemaPlugin);
 
-export { CarOptionSchema };
+export { CarTagSchema };

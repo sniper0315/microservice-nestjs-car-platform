@@ -50,7 +50,7 @@ class CreateCarDto {
 
     @ApiProperty({ description: 'Car Type', example: { value: 'Sport Utility Vehicle', display: 'SUV' } })
     @IsObject()
-    type: ICarType;
+    carType: ICarType;
 
     @ApiProperty({ description: 'Transmission', example: { value: 'Continuous Variable Transmission', display: 'Automatic' } })
     @IsObject()
@@ -59,10 +59,6 @@ class CreateCarDto {
     @ApiProperty({ description: 'Car Owner Id: This must be 12 bytes of HEX string or integer', example: '61dc2d31bbe643fc32022a5f' })
     @IsNotEmpty()
     carOwnerId: string;
-
-    @ApiProperty({ description: 'Flag to check that car is active', example: 'true' })
-    @IsBoolean()
-    isActive: boolean;
 }
 
 export default CreateCarDto;

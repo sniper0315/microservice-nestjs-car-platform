@@ -6,6 +6,7 @@ import CarServiceTypeDto from '../types/dto/CarServiceType.dto';
 import ICarServiceStatus from '../types/interfaces/ICarServiceStatus.interface';
 import ICarServiceType from '../types/interfaces/ICarServiceType.interface';
 import { Car } from 'src/car/schemas/car.schema';
+import SchemaPlugin from 'src/helpers/schemaPlugin';
 
 export type CarServiceDocument = CarService & Document;
 
@@ -40,6 +41,16 @@ export class CarService {
 
     @Prop({ default: false, type: mSchema.Types.Boolean })
     isDeleted: boolean;
+
+    @Prop()
+    createdAt: string;
+
+    @Prop({ default: '' })
+    updatedAt: string;
 }
 
-export const CarServiceSchema = SchemaFactory.createForClass(CarService);
+const CarServiceSchema = SchemaFactory.createForClass(CarService);
+
+CarServiceSchema.plugin(SchemaPlugin);
+
+export { CarServiceSchema };

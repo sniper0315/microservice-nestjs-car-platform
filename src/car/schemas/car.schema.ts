@@ -1,6 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as mSchema } from 'mongoose';
 
+import SchemaPlugin from 'src/helpers/schemaPlugin';
+
 import CarFuelDto from '../types/dto/CarFuel.dto';
 import CarModelDto from '../types/dto/CarModel.dto';
 import CarTransmissionDto from '../types/dto/CarTransmission.dto';
@@ -48,7 +50,7 @@ export class Car {
     luggage: ICarLuggage;
 
     @Prop({ type: CarTypeDto })
-    type: ICarType;
+    carType: ICarType;
 
     @Prop({ type: CarTransmissionDto })
     transmission: ICarTransmission;
@@ -67,6 +69,16 @@ export class Car {
 
     @Prop({ default: true })
     isActive: boolean;
+
+    @Prop()
+    createdAt: string;
+
+    @Prop({ default: '' })
+    updatedAt: string;
 }
 
-export const CarSchema = SchemaFactory.createForClass(Car);
+const CarSchema = SchemaFactory.createForClass(Car);
+
+CarSchema.plugin(SchemaPlugin);
+
+export { CarSchema };

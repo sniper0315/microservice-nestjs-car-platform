@@ -22,7 +22,7 @@ export default class CarServiceService {
 
             return await newService.save();
         } catch (e) {
-            throw new BadRequestException({ message: 'Failed to create new car service' });
+            throw new BadRequestException({ message: e.originalStack });
         }
     }
 
@@ -30,7 +30,7 @@ export default class CarServiceService {
         try {
             return await this.carServiceModel.find();
         } catch (e) {
-            throw new BadRequestException({ message: 'Failed to get all car services.' });
+            throw new BadRequestException({ message: e.originalStack });
         }
     }
 
@@ -38,22 +38,26 @@ export default class CarServiceService {
         try {
             return await this.carServiceModel.findById(new ObjectId(carServiceId));
         } catch (e) {
-            throw new BadRequestException({ message: `Failed to get car service with id=${carServiceId}` });
+            throw new BadRequestException({ message: e.originalStack });
         }
     }
 
-    async updateCarService(serviceId: string, dto?: UpdateCarServiceDto) {
+    async updateCarService(carServiceId: string, dto?: UpdateCarServiceDto) {
         try {
-            return await this.carServiceModel.findByIdAndUpdate(
-                new ObjectId(serviceId),
+            return await this.carServiceModel.findOneAndUpdate(
+                { _id: new ObjectId(carServiceId) },
                 {
                     ...dto,
                     lastUpdateDateTime: new Date().toISOString()
                 },
-                { new: true }
+                { new: true },
+                function (err, model) {
+                    if (model) return model;
+                    else return new Error(err.message);
+                }
             );
         } catch (e) {
-            throw new BadRequestException({ message: `Failed to update car service. Not Found carServiceId={${serviceId}}` });
+            throw new BadRequestException({ message: e.originalStack });
         }
     }
 
@@ -63,7 +67,7 @@ export default class CarServiceService {
 
             return 'Successfully removed';
         } catch (e) {
-            throw new BadRequestException({ message: `Failed to delete car services with "${dto.carServiceId.join(',')}"` });
+            throw new BadRequestException({ message: e.originalStack });
         }
     }
 }

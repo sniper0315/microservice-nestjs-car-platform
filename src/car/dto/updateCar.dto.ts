@@ -50,7 +50,7 @@ class UpdateCarDto {
 
     @ApiProperty({ description: 'Car Type', example: { value: 'Sport Utility Vehicle', display: 'SUV' } })
     @IsObject()
-    type: ICarType;
+    carType: ICarType;
 
     @ApiProperty({ description: 'Transmission', example: { value: 'Continuous Variable Transmission', display: 'Automatic' } })
     @IsObject()

@@ -14,41 +14,49 @@ export default class CarService {
 
     async createCar(dto?: CreateCarDto) {
         try {
-            const newUser = new this.carModel({
+            const newCar = new this.carModel({
                 ...dto,
                 carOwnerId: new ObjectId(dto.carOwnerId)
             });
 
-            return await newUser.save();
+            return await newCar.save();
         } catch (e) {
-            throw new BadRequestException({ message: 'Failed to create new car' });
+            throw new BadRequestException({ message: e.originalStack });
         }
     }
 
     async getAllCars() {
-        return await this.carModel.find();
+        try {
+            return await this.carModel.find();
+        } catch (e) {
+            throw new BadRequestException({ message: e.originalStack });
+        }
     }
 
     async getSingleCar(carId: string) {
         try {
             return await this.carModel.findById(new ObjectId(carId));
         } catch (e) {
-            throw new BadRequestException({ message: `Failed to get car with id=${carId}` });
+            throw new BadRequestException({ message: e.originalStack });
         }
     }
 
     async updateCar(carId: string, dto?: UpdateCarDto) {
         try {
-            return await this.carModel.findByIdAndUpdate(
-                new ObjectId(carId),
+            return await this.carModel.findOneAndUpdate(
+                { _id: new ObjectId(carId) },
                 {
                     ...dto,
                     lastUpdateDateTime: new Date().toISOString()
                 },
-                { new: true }
+                { new: true },
+                function (err, model) {
+                    if (model) return model;
+                    else throw new BadRequestException({ message: `Not found with ${carId}. Please input id correctly.` });
+                }
             );
         } catch (e) {
-            throw new BadRequestException({ message: `Failed to update car. Not Found carId={${carId}}` });
+            throw new BadRequestException({ message: e.originalStack });
         }
     }
 
@@ -58,7 +66,7 @@ export default class CarService {
 
             return 'Successfully removed';
         } catch (e) {
-            throw new BadRequestException({ message: `Failed to delete cars with "${dto.carId.join(',')}"` });
+            throw new BadRequestException({ message: e.originalStack });
         }
     }
 }

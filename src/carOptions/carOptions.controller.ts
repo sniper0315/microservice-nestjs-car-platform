@@ -5,6 +5,7 @@ import CarOptionsService from './carOptions.service';
 import CreateCarOptionDto from './dto/createCarOption.dto';
 import DeleteCarOptionDto from './dto/deleteCarOption.dto';
 import UpdateCarOptionDto from './dto/updateCarOption.dto';
+import { getComparator, stableSort } from 'src/helpers/utils';
 
 @Controller('car/option')
 @ApiTags('carOptions')
@@ -20,7 +21,32 @@ export default class CarOptionsController {
     @Get('/all')
     @ApiOperation({ summary: 'get all car options from collection' })
     async getAllCarOptions() {
-        return await this.carOptionsService.getAllCarOptions();
+        const all = await this.carOptionsService.getAllCarOptions();
+        const sortedAll = stableSort(all, getComparator('desc', 'createDateTime'));
+        const newAll = sortedAll.map((item, index) => {
+            const dateTime = {
+                cretedDateTimeFrom: item.createDateTime,
+                cretedDateTimeTo: item.createdAt,
+                lastUpdateDateTimeFrom: item.lastUpdateDateTime,
+                lastUpdateDateTimeTo: item.updatedAt
+            };
+            const metaInfo = {
+                sortBy: 'createDateTime',
+                sortDirection: 'desc',
+                offset: index,
+                limit: 10
+            };
+            const id = item._id.toString();
+            const carId = item.carId.toString();
+            const optionType = item.optionType;
+            const optionDescription = item.optionDescription;
+            const isDeleted = item.isDeleted;
+            const isActive = item.isActive;
+
+            return { id, carId, optionType, optionDescription, isDeleted, isActive, dateTime, metaInfo };
+        });
+
+        return newAll;
     }
 
     @Get('/:carOptionId')

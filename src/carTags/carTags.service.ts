@@ -3,48 +3,48 @@ import { InjectModel } from '@nestjs/mongoose';
 import { ObjectId } from 'mongodb';
 import { Model } from 'mongoose';
 
-import CreateCarOptionDto from './dto/createCarOption.dto';
-import DeleteCarOptionDto from './dto/deleteCarOption.dto';
-import UpdateCarOptionDto from './dto/updateCarOption.dto';
-import { CarOption, CarOptionDocument } from './schemas/carOptions.schema';
+import CreateCarTagDto from './dto/createCarTag.dto';
+import DeleteCarTagDto from './dto/deleteCarTag.dto';
+import UpdateCarTagDto from './dto/updateCarTag.dto';
+import { CarTag, CarTagDocument } from './schemas/carTags.schema';
 
 @Injectable()
-export default class CarOptionsService {
-    constructor(@InjectModel(CarOption.name) private carOptionsModel: Model<CarOptionDocument>) {}
+export default class CarTagsService {
+    constructor(@InjectModel(CarTag.name) private carTagModel: Model<CarTagDocument>) {}
 
-    async createCarOption(dto?: CreateCarOptionDto) {
+    async createCarTag(dto?: CreateCarTagDto) {
         try {
-            const newOption = new this.carOptionsModel({
+            const newTag = new this.carTagModel({
                 ...dto,
                 carId: new ObjectId(dto.carId)
             });
 
-            return await newOption.save();
+            return await newTag.save();
         } catch (e) {
             throw new BadRequestException({ message: e.originalStack });
         }
     }
 
-    async getAllCarOptions() {
+    async getAllCarTags() {
         try {
-            return await this.carOptionsModel.find();
+            return await this.carTagModel.find();
         } catch (e) {
             throw new BadRequestException({ message: e.originalStack });
         }
     }
 
-    async getSingleCarOption(carOptionId: string) {
+    async getSingleCarTag(carTagId: string) {
         try {
-            return await this.carOptionsModel.findById(new ObjectId(carOptionId));
+            return await this.carTagModel.findById(new ObjectId(carTagId));
         } catch (e) {
             throw new BadRequestException({ message: e.originalStack });
         }
     }
 
-    async updateCarOption(carOptionId: string, dto?: UpdateCarOptionDto) {
+    async updateCarTag(carTagId: string, dto?: UpdateCarTagDto) {
         try {
-            return await this.carOptionsModel.findOneAndUpdate(
-                { _id: new ObjectId(carOptionId) },
+            return await this.carTagModel.findOneAndUpdate(
+                { _id: new ObjectId(carTagId) },
                 {
                     ...dto,
                     lastUpdateDateTime: new Date().toISOString()
@@ -60,9 +60,9 @@ export default class CarOptionsService {
         }
     }
 
-    async deleteCarOption(dto: DeleteCarOptionDto) {
+    async deleteCarTag(dto: DeleteCarTagDto) {
         try {
-            await this.carOptionsModel.updateMany({ _id: { $in: dto.carOptionId } }, { $set: { isDeleted: true } });
+            await this.carTagModel.updateMany({ _id: { $in: dto.carTagId } }, { $set: { isDeleted: true } });
 
             return 'Successfully removed';
         } catch (e) {

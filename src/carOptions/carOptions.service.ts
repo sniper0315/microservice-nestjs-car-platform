@@ -5,6 +5,7 @@ import { Model } from 'mongoose';
 
 import CreateCarOptionDto from './dto/createCarOption.dto';
 import DeleteCarOptionDto from './dto/deleteCarOption.dto';
+import GetAllCarOptionsDto from './dto/getAll.dto';
 import UpdateCarOptionDto from './dto/updateCarOption.dto';
 import { CarOption, CarOptionDocument } from './schemas/carOptions.schema';
 
@@ -14,20 +15,34 @@ export default class CarOptionsService {
 
     async createCarOption(dto?: CreateCarOptionDto) {
         try {
-            const newOption = new this.carOptionsModel({
-                ...dto,
-                carId: new ObjectId(dto.carId)
-            });
-
-            return await newOption.save();
+            return await (await this.carOptionsModel.create({ ...dto, carId: new ObjectId(dto.carId) })).save({ timestamps: false });
         } catch (e) {
             throw new BadRequestException({ message: e.originalStack });
         }
     }
 
-    async getAllCarOptions() {
+    async getAllCarOptions(dto?: GetAllCarOptionsDto) {
         try {
-            return await this.carOptionsModel.find();
+            const sortBy = dto.metaInfo.sortBy;
+            const sortDirection = dto.metaInfo.sortDirection.toLowerCase();
+            let sortObject = {};
+
+            sortObject[sortBy] = sortDirection;
+
+            return await this.carOptionsModel
+                .find({
+                    createDateTime: { $gte: dto.dateTime.createdDateTimeFrom, $lte: dto.dateTime.createdDateTimeTo },
+                    $or: [
+                        { carId: dto.carId === '' ? null : new ObjectId(dto.carId) },
+                        { optionType: dto.optionType },
+                        { optionDescription: dto.optionDescription },
+                        { lastUpdateDateTime: { $eq: '' } },
+                        { $and: [{ lastUpdateDateTime: { $ne: '' } }, { lastUpdateDateTime: { $gte: dto.dateTime.lastUpdateDateTimeFrom, $lte: dto.dateTime.lastUpdateDateTimeTo } }] }
+                    ]
+                })
+                .sort(sortObject)
+                .skip(dto.metaInfo.offset)
+                .limit(dto.metaInfo.limit);
         } catch (e) {
             throw new BadRequestException({ message: e.originalStack });
         }
@@ -43,18 +58,23 @@ export default class CarOptionsService {
 
     async updateCarOption(carOptionId: string, dto?: UpdateCarOptionDto) {
         try {
-            return await this.carOptionsModel.findOneAndUpdate(
-                { _id: new ObjectId(carOptionId) },
-                {
-                    ...dto,
-                    lastUpdateDateTime: new Date().toISOString()
-                },
-                { new: true },
-                function (err, model) {
-                    if (model) return model;
-                    else return new Error(err.message);
-                }
-            );
+            return await this.carOptionsModel
+                .findOneAndUpdate(
+                    { _id: new ObjectId(carOptionId) },
+                    {
+                        ...dto,
+                        lastUpdateDateTime: new Date().toISOString()
+                    },
+                    { new: true, timestamps: false },
+                    function (err, model) {
+                        if (model) return model;
+                        else return false;
+                    }
+                )
+                .clone()
+                .catch(function (err) {
+                    throw new BadRequestException({ message: err });
+                });
         } catch (e) {
             throw new BadRequestException({ message: e.originalStack });
         }
@@ -62,9 +82,7 @@ export default class CarOptionsService {
 
     async deleteCarOption(dto: DeleteCarOptionDto) {
         try {
-            await this.carOptionsModel.updateMany({ _id: { $in: dto.carOptionId } }, { $set: { isDeleted: true } });
-
-            return 'Successfully removed';
+            return await this.carOptionsModel.updateMany({ _id: { $in: dto.carOptionId } }, { $set: { isDeleted: true } }, { timestamps: false });
         } catch (e) {
             throw new BadRequestException({ message: e.originalStack });
         }

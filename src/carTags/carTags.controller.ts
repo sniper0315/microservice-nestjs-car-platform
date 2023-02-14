@@ -1,10 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
-import { getComparator, stableSort } from 'src/helpers/utils';
 import CarTagsService from './carTags.service';
 import CreateCarTagDto from './dto/createCarTag.dto';
 import DeleteCarTagDto from './dto/deleteCarTag.dto';
+import GetAllCarTagsDto from './dto/getAll.dto';
 import UpdateCarTagDto from './dto/updateCarTag.dto';
 
 @Controller('car/tag')
@@ -18,33 +18,10 @@ export default class CarTagsController {
         return await this.carTagsService.createCarTag(dto);
     }
 
-    @Get('/all')
+    @Post('/all')
     @ApiOperation({ summary: 'get all car tags from collection' })
-    async getAllCarTags() {
-        const all = await this.carTagsService.getAllCarTags();
-        const sortedAll = stableSort(all, getComparator('desc', 'createDateTime'));
-        const newAll = sortedAll.map((item, index) => {
-            const dateTime = {
-                cretedDateTimeFrom: item.createDateTime,
-                cretedDateTimeTo: item.createdAt,
-                lastUpdateDateTimeFrom: item.lastUpdateDateTime,
-                lastUpdateDateTimeTo: item.updatedAt
-            };
-            const metaInfo = {
-                sortBy: 'createDateTime',
-                sortDirection: 'desc',
-                offset: index,
-                limit: 10
-            };
-            const id = item._id.toString();
-            const carId = item.carId.toString();
-            const tagName = item.tagName;
-            const isDeleted = item.isDeleted;
-
-            return { id, carId, tagName, isDeleted, dateTime, metaInfo };
-        });
-
-        return newAll;
+    async getAllCarTags(@Body() dto: GetAllCarTagsDto) {
+        return await this.carTagsService.getAllCarTags(dto);
     }
 
     @Get('/:carTagId')
@@ -56,16 +33,16 @@ export default class CarTagsController {
     @Put('/:carTagId')
     @ApiOperation({ summary: 'update car tag' })
     async updateCarTag(@Param('carTagId') carTagId: string, @Body() dto: UpdateCarTagDto) {
-        return await this.carTagsService.updateCarTag(carTagId, dto);
+        const ret = await this.carTagsService.updateCarTag(carTagId, dto);
+
+        return ret ? ret : `Not Found with ${carTagId}. Please input carTagId correctly.`;
     }
 
     @Delete('/remove')
     @ApiOperation({ summary: 'delete car tag logically' })
-    async deleteCarTag(@Res() response, @Body() dto: DeleteCarTagDto) {
-        const message = await this.carTagsService.deleteCarTag(dto);
+    async deleteCarTag(@Body() dto: DeleteCarTagDto) {
+        await this.carTagsService.deleteCarTag(dto);
 
-        return response.json({
-            message
-        });
+        return 'Successfully removed';
     }
 }

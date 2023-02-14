@@ -1,11 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import CarService from './car.service';
 import CreateCarDto from './dto/createCar.dto';
 import DeleteCarDto from './dto/deleteCar.dto';
+import GetAllCarsDto from './dto/getAll.dto';
 import UpdateCarDto from './dto/updateCar.dto';
-import { getComparator, stableSort } from 'src/helpers/utils';
 
 @Controller('car')
 @ApiTags('car')
@@ -18,43 +18,10 @@ export default class CarController {
         return await this.carService.createCar(dto);
     }
 
-    @Get('/all')
+    @Post('/all')
     @ApiOperation({ summary: 'get all cars from collection' })
-    async getAllCars() {
-        const all = await this.carService.getAllCars();
-        const sortedAll = stableSort(all, getComparator('desc', 'createDateTime'));
-        const newAll = sortedAll.map((item, index) => {
-            const dateTime = {
-                cretedDateTimeFrom: item.createDateTime,
-                cretedDateTimeTo: item.createdAt,
-                lastUpdateDateTimeFrom: item.lastUpdateDateTime,
-                lastUpdateDateTimeTo: item.updatedAt
-            };
-            const metaInfo = {
-                sortBy: 'createDateTime',
-                sortDirection: 'desc',
-                offset: index,
-                limit: 10
-            };
-            const id = item._id.toString();
-            const produceCompany = item.produceCompany;
-            const carModel = item.carModel;
-            const produceYear = item.produceYear;
-            const seats = item.seats;
-            const color = item.color;
-            const doors = item.doors;
-            const fuelType = item.fuelType;
-            const luggage = item.luggage;
-            const carType = item.carType;
-            const transmission = item.transmission;
-            const carOwnerId = item.carOwnerId.toString();
-            const isDeleted = item.isDeleted;
-            const isActive = item.isActive;
-
-            return { id, produceCompany, carModel, produceYear, seats, color, doors, fuelType, luggage, carType, transmission, carOwnerId, isDeleted, isActive, dateTime, metaInfo };
-        });
-
-        return newAll;
+    async getAllCars(@Body() dto: GetAllCarsDto) {
+        return await this.carService.getAllCars(dto);
     }
 
     @Get('/:carId')
@@ -66,16 +33,16 @@ export default class CarController {
     @Put('/:carId')
     @ApiOperation({ summary: 'update car data' })
     async updateCar(@Param('carId') carId: string, @Body() dto: UpdateCarDto) {
-        return await this.carService.updateCar(carId, dto);
+        const ret = await this.carService.updateCar(carId, dto);
+
+        return ret ? ret : `Not Found with ${carId}. Please input carId correctly.`;
     }
 
     @Delete('/remove')
     @ApiOperation({ summary: 'delete car logically' })
-    async deleteCar(@Res() response, @Body() dto: DeleteCarDto) {
-        const message = await this.carService.deleteCar(dto);
+    async deleteCar(@Body() dto: DeleteCarDto) {
+        await this.carService.deleteCar(dto);
 
-        return response.json({
-            message
-        });
+        return 'Successfully removed';
     }
 }

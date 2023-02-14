@@ -2,16 +2,17 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as mSchema } from 'mongoose';
 
 import { Car } from 'src/car/schemas/car.schema';
+
 import CarOptionsDto from 'src/carOptions/types/dto/CarOptions.dto';
+
 import ICarOptions from 'src/carOptions/types/interfaces/ICarOptions.interface';
-import SchemaPlugin from 'src/helpers/schemaPlugin';
 
 export type CarOptionsExtraPaymentDocument = CarOptionsExtraPayment & Document;
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: false })
 export class CarOptionsExtraPayment {
-    @Prop({ required: true, ref: Car.name })
-    carId: mSchema.Types.ObjectId;
+    @Prop({ type: mSchema.Types.ObjectId, required: true, ref: Car.name })
+    carId: string;
 
     @Prop({ type: CarOptionsDto })
     optionType: ICarOptions;
@@ -33,16 +34,8 @@ export class CarOptionsExtraPayment {
 
     @Prop({ default: true, type: mSchema.Types.Boolean })
     isActive: boolean;
-
-    @Prop()
-    createdAt: string;
-
-    @Prop({ default: '' })
-    updatedAt: string;
 }
 
 const CarOptionsExtraPaymentSchema = SchemaFactory.createForClass(CarOptionsExtraPayment);
-
-CarOptionsExtraPaymentSchema.plugin(SchemaPlugin);
 
 export { CarOptionsExtraPaymentSchema };

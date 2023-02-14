@@ -1,8 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as mSchema } from 'mongoose';
 
-import SchemaPlugin from 'src/helpers/schemaPlugin';
-
 import CarFuelDto from '../types/dto/CarFuel.dto';
 import CarModelDto from '../types/dto/CarModel.dto';
 import CarTransmissionDto from '../types/dto/CarTransmission.dto';
@@ -19,11 +17,11 @@ import ICarTransmission from '../types/interfaces/ICarTransmission.interface';
 import ICarType from '../types/interfaces/ICarType.interface';
 import IColor from '../types/interfaces/IColor.interface';
 import IProduceCompany from '../types/interfaces/IProduceCompany.interface';
-import IYear from '../types/interfaces/IYear';
+import IYear from '../types/interfaces/IYear.interface';
 
 export type CarDocument = Car & Document;
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: false })
 export class Car {
     @Prop({ type: ProduceCompanyDto })
     produceCompany: IProduceCompany;
@@ -55,8 +53,8 @@ export class Car {
     @Prop({ type: CarTransmissionDto })
     transmission: ICarTransmission;
 
-    @Prop()
-    carOwnerId: mSchema.Types.ObjectId;
+    @Prop({ type: mSchema.Types.ObjectId })
+    carOwnerId: string;
 
     @Prop({ default: new Date().toISOString() })
     createDateTime: string;
@@ -69,16 +67,8 @@ export class Car {
 
     @Prop({ default: true })
     isActive: boolean;
-
-    @Prop()
-    createdAt: string;
-
-    @Prop({ default: '' })
-    updatedAt: string;
 }
 
 const CarSchema = SchemaFactory.createForClass(Car);
-
-CarSchema.plugin(SchemaPlugin);
 
 export { CarSchema };

@@ -1,10 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import DeleteCarOptionDto from 'src/carOptions/dto/deleteCarOption.dto';
-import { getComparator, stableSort } from 'src/helpers/utils';
 import CarOptionsExtraPaymentService from './carOptionsExtraPayment.service';
 import CreateCarExtraPaymentOptionDto from './dto/createCarExtraPaymentOption.dto';
+import GetAllCarExtraPaymentOptionsDto from './dto/getAll.dto';
 import UpdateCarExtraPaymentOptionDto from './dto/updateCarExtraPaymentOption.dto';
 
 @Controller('car/option/extrapay')
@@ -18,36 +18,10 @@ export default class CarOptionsExtraPaymentController {
         return await this.carOptionsExtraPaymentService.createCarExtraPaymentOption(dto);
     }
 
-    @Get('/all')
+    @Post('/all')
     @ApiOperation({ summary: 'get all car extra payment options from collection' })
-    async getAllCarExtraPaymentOptions() {
-        const all = await this.carOptionsExtraPaymentService.getAllCarExtraPaymentOptions();
-        const sortedAll = stableSort(all, getComparator('desc', 'createDateTime'));
-        const newAll = sortedAll.map((item, index) => {
-            const dateTime = {
-                cretedDateTimeFrom: item.createDateTime,
-                cretedDateTimeTo: item.createdAt,
-                lastUpdateDateTimeFrom: item.lastUpdateDateTime,
-                lastUpdateDateTimeTo: item.updatedAt
-            };
-            const metaInfo = {
-                sortBy: 'createDateTime',
-                sortDirection: 'desc',
-                offset: index,
-                limit: 10
-            };
-            const id = item._id.toString();
-            const carId = item.carId.toString();
-            const optionType = item.optionType;
-            const optionDescription = item.optionDescription;
-            const price = item.price;
-            const isDeleted = item.isDeleted;
-            const isActive = item.isActive;
-
-            return { id, carId, optionType, optionDescription, price, isDeleted, isActive, dateTime, metaInfo };
-        });
-
-        return newAll;
+    async getAllCarExtraPaymentOptions(@Body() dto: GetAllCarExtraPaymentOptionsDto) {
+        return await this.carOptionsExtraPaymentService.getAllCarExtraPaymentOptions(dto);
     }
 
     @Get('/:carOptionId')
@@ -59,16 +33,16 @@ export default class CarOptionsExtraPaymentController {
     @Put('/:carOptionExtraPayId')
     @ApiOperation({ summary: 'update car extra payment option' })
     async updateCarOption(@Param('carOptionExtraPayId') carOptionExtraPayId: string, @Body() dto: UpdateCarExtraPaymentOptionDto) {
-        return await this.carOptionsExtraPaymentService.updateCarExtraPaymentOption(carOptionExtraPayId, dto);
+        const ret = await this.carOptionsExtraPaymentService.updateCarExtraPaymentOption(carOptionExtraPayId, dto);
+
+        return ret ? ret : `Not Found with ${carOptionExtraPayId}. Please input carOptionExtraPayId correctly.`;
     }
 
     @Delete('/remove')
     @ApiOperation({ summary: 'delete car extra payment option logically' })
-    async deleteCarOption(@Res() response, @Body() dto: DeleteCarOptionDto) {
-        const message = await this.carOptionsExtraPaymentService.deleteCarExtraPaymentOption(dto);
+    async deleteCarOption(@Body() dto: DeleteCarOptionDto) {
+        await this.carOptionsExtraPaymentService.deleteCarExtraPaymentOption(dto);
 
-        return response.json({
-            message
-        });
+        return 'Successfully removed';
     }
 }

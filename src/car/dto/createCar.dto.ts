@@ -1,9 +1,9 @@
-import { IsBoolean, IsNotEmpty, IsNumber, IsObject } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsObject } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 import IProduceCompany from '../types/interfaces/IProduceCompany.interface';
 import ICarModel from '../types/interfaces/ICarModel.interface';
-import IYear from '../types/interfaces/IYear';
+import IYear from '../types/interfaces/IYear.interface';
 import ICarSeat from '../types/interfaces/ICarSeat.interface';
 import IColor from '../types/interfaces/IColor.interface';
 import ICarDoor from '../types/interfaces/ICarDoor.interface';
